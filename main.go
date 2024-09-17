@@ -28,9 +28,8 @@ func main() {
 		panic(err)
 	}
 
-	// client does not sort tasks, but we can do so by any criteria we want to
+	// client does not sort tasks, but we can do so by any criteria we want
 	sort.Slice(tasks, func(i, j int) bool {
-		// sort by whatever you want
 		return tasks[i].Priority > tasks[j].Priority
 	})
 

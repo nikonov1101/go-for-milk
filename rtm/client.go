@@ -2,18 +2,14 @@ package rtm
 
 import (
 	"crypto/md5"
-	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/pkg/errors"
 )
@@ -106,47 +102,6 @@ func signature(values url.Values, sharedSecret string) string {
 	raw := sharedSecret + strings.Join(keys, "")
 	hash := md5.Sum([]byte(raw))
 	return fmt.Sprintf("%x", hash)
-}
-
-func loadCachedToken() (string, error) {
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		return "", errors.Wrap(err, "get user's home dir")
-	}
-
-	tokenCachedPath := filepath.Join(homedir, ".rtm-token")
-	bs, err := os.ReadFile(tokenCachedPath)
-	if err != nil {
-		return "", errors.Wrap(err, "read cached token")
-	}
-	ct := cachedToken{}
-	if err := json.Unmarshal(bs, &ct); err != nil {
-		return "", errors.Wrap(err, "unmarshal cached token JSON")
-	}
-
-	log.Printf("cached token loaded: updated %s (%s ago)", ct.UpdatedAt, time.Since(ct.UpdatedAt))
-	return ct.Token, nil
-}
-
-func saveCahcedToken(token string) error {
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		return errors.Wrap(err, "get user's home dir")
-	}
-
-	tokenCachedPath := filepath.Join(homedir, ".rtm-token")
-	ct := cachedToken{
-		Token:     token,
-		UpdatedAt: time.Now().UTC(),
-	}
-
-	bs, _ := json.Marshal(ct)
-	if err := os.WriteFile(tokenCachedPath, bs, 0o600); err != nil {
-		errors.Wrap(err, "write token cache file")
-	}
-
-	log.Printf("cached token saved to %q", tokenCachedPath)
-	return nil
 }
 
 func httpGet(target string) ([]byte, error) {
