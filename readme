@@ -1,0 +1,19 @@
+go-for-milk
+===========
+
+A Remember The Milk client in Go. 
+
+Yet another one-evening toy project,
+the client implements the full auth flow,
+and methods for adding and listing tasks.
+
+You can easily extend existing code[1] to
+use all other methods[2] just by copy-pasting
+the existing ones.
+
+
+===
+
+[1] https://www.rememberthemilk.com/services/api/methods.rtm
+[2] see rtm/client.go @ AddTask,ListTask methods as reference
+
