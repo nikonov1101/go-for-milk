@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"sort"
@@ -11,6 +12,14 @@ import (
 )
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "%s: cli and API client for Remember the Milk service.\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Call %q without arguments prints the current task list.\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Call it with *any* arguments, will glues up the argument's text, and create a task e.g.:\n\t%s reminder about X\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Details and source code: https://github.com/nikonov1101/go-for-milk\n")
+	}
+	flag.Parse()
+
 	key, secret := loadKeys()
 
 	cli, err := rtm.New(key, secret)
