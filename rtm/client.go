@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -26,17 +25,18 @@ func New(key, shared string) (Client, error) {
 	// try to load the cached authToken from $HOME/.rtm-token
 	authToken, err := loadCachedToken()
 	if err != nil {
-		log.Printf("unable to load cached token... let's re-issue one.")
+		debugf("unable to load cached token... let's re-issue one.")
 
 		// if there is no token (fresh start?), then go issue one.
 		// authFull will print the URL you have to follow and authorize the app.
 		authToken, err = cli.authFull()
 		if err != nil {
-			log.Printf("failed to perform full auth: %v", err)
+			debugf("failed to perform full auth: %v", err)
 			return Client{}, err
 		}
 
 		if err := saveCahcedToken(authToken); err != nil {
+			debugf("failed to save cached token: %v", err)
 			return Client{}, err
 		}
 	}
@@ -105,8 +105,7 @@ func signature(values url.Values, sharedSecret string) string {
 }
 
 func httpGet(target string) ([]byte, error) {
-	// uncomment to debug requests flow
-	// log.Printf("http request: %q", target)
+	debugf("http request: %q", target)
 	resp, err := http.DefaultClient.Get(target)
 	if err != nil {
 		return nil, errors.Wrap(err, "do request")

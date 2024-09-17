@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"sort"
 	"strconv"
@@ -25,12 +24,11 @@ func main() {
 	// go run main.go this is important stuff \!2
 	if len(os.Args) > 1 {
 		name := strings.Join(os.Args[1:], " ")
-		log.Printf("name = %q", name)
 		if err := cli.AddTask(name); err != nil {
 			panic(err)
 		}
 
-		log.Printf("task added.")
+		fmt.Printf("OK: task %q added.", name)
 		os.Exit(0)
 	}
 
@@ -61,11 +59,11 @@ func loadKeys() (string, string) {
 	key := os.Getenv("RTM_APIKEY")
 	secret := os.Getenv("RTM_SECRET")
 	if len(key) == 0 {
-		log.Printf("no RTM_APIKEY env variable set")
+		fmt.Println("no RTM_APIKEY env variable set")
 		os.Exit(1)
 	}
 	if len(secret) == 0 {
-		log.Printf("no RTM_SECRET env variable set")
+		fmt.Println("no RTM_SECRET env variable set")
 		os.Exit(1)
 	}
 

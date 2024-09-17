@@ -3,6 +3,7 @@ package rtm
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -20,10 +21,10 @@ func (c Client) authFull() (string, error) {
 	}
 
 	tmpAuthURL := c.makeDesktopAuthURL(frob)
-	log.Printf("open auth URL in your browser:\n%s\n", tmpAuthURL)
+	fmt.Printf("open auth URL in your browser:\n%s\n", tmpAuthURL)
 	<-time.After(2 * time.Second)
 
-	log.Printf("press any key to continue authorization process...")
+	fmt.Printf("press any key to continue authorization process...")
 	os.Stdin.Read(make([]byte, 1))
 
 	// exchange the short-living frob for the long-living auth token
@@ -51,6 +52,7 @@ func (c Client) generateNewFrob() (string, error) {
 		return "", errors.Wrap(err, "parse response XML")
 	}
 
+	debugf("grob generated: %q", frob.Frob)
 	return frob.Frob, nil
 }
 
@@ -80,6 +82,7 @@ func (c Client) getAuthToken(frob string) (string, error) {
 		return "", err
 	}
 
+	debugf("get auth token: response: %s", string(bs))
 	tokenResp := authTokenResponse{}
 	if err := xml.Unmarshal(bs, &tokenResp); err != nil {
 		return "", errors.Wrap(err, "parse XML response")
@@ -89,7 +92,7 @@ func (c Client) getAuthToken(frob string) (string, error) {
 		return "", errors.New("token request failed: have you visited the authorization URL?")
 	}
 
-	log.Printf("authorized as @%s (%s)", tokenResp.Auth.User.Username, tokenResp.Auth.User.Fullname)
+	debugf("authorized as @%s (%s)", tokenResp.Auth.User.Username, tokenResp.Auth.User.Fullname)
 	return tokenResp.Auth.Token, nil
 }
 
@@ -102,11 +105,11 @@ func (c Client) checkAuthToken(token string) error {
 	target := c.signedURL(vs)
 	if bs, err := httpGet(target); err != nil {
 		// be more verbose on why auth token is not valid
-		log.Printf("check auth token: FAILED: %v", string(bs))
+		debugf("check auth token: FAILED: %v", string(bs))
 		return err
 	}
 
-	log.Printf("check auth token: OK")
+	debugf("check auth token: OK")
 	return nil
 }
 
@@ -117,6 +120,8 @@ func loadCachedToken() (string, error) {
 	}
 
 	tokenCachedPath := filepath.Join(homedir, ".rtm-token")
+	debugf("loading cached token from %q...", tokenCachedPath)
+
 	bs, err := os.ReadFile(tokenCachedPath)
 	if err != nil {
 		return "", errors.Wrap(err, "read cached token")
@@ -126,7 +131,7 @@ func loadCachedToken() (string, error) {
 		return "", errors.Wrap(err, "unmarshal cached token JSON")
 	}
 
-	log.Printf("cached token loaded: updated %s (%s ago)", ct.UpdatedAt, time.Since(ct.UpdatedAt))
+	debugf("cached token loaded: updated %s (%s ago)", ct.UpdatedAt, time.Since(ct.UpdatedAt))
 	return ct.Token, nil
 }
 
@@ -137,6 +142,8 @@ func saveCahcedToken(token string) error {
 	}
 
 	tokenCachedPath := filepath.Join(homedir, ".rtm-token")
+	debugf("saving cached token to %q...", tokenCachedPath)
+
 	ct := cachedToken{
 		Token:     token,
 		UpdatedAt: time.Now().UTC(),
@@ -147,6 +154,13 @@ func saveCahcedToken(token string) error {
 		errors.Wrap(err, "write token cache file")
 	}
 
-	log.Printf("cached token saved to %q", tokenCachedPath)
+	debugf("cached token saved to %q", tokenCachedPath)
 	return nil
+}
+
+func debugf(f string, args ...any) {
+	// WARN: will leak keys
+	if v := os.Getenv("RTM_DEBUG"); len(v) > 0 {
+		log.Printf(f, args...)
+	}
 }

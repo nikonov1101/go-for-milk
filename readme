@@ -11,9 +11,15 @@ You can easily extend existing code[1] to
 use all other methods[2] just by copy-pasting
 the existing ones.
 
+Reference implementation is in "examples" directory,
+./main.go contains a code intended for everyday usage by me.
+
+Please also note the existence of "debugf" wrapper and "RTM_DEBUG"[3]
+environment variable which are defined in the "rtm" package. 
 
 ===
 
 [1] https://www.rememberthemilk.com/services/api/methods.rtm
 [2] see rtm/client.go @ AddTask,ListTask methods as reference
+[3] rtm/auth.go:163
 
