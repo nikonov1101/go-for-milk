@@ -137,17 +137,20 @@ func timeFromXML(s string) time.Time {
 	return t
 }
 
-// convert priorities to int to make it sortable
+// convert priorities to int to make it sortable,
+// please note that number values does not match
+// the actual values from RTM: we made've reversed
+// it for the sake of sortability.
 func convertPriority(p string) int {
 	switch p {
 	case "N":
 		return 0
 	case "1":
-		return 1
+		return 3
 	case "2":
 		return 2
 	case "3":
-		return 3
+		return 1
 	default:
 		return 0
 	}
